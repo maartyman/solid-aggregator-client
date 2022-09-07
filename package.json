@@ -1,0 +1,28 @@
+{
+  "name": "solid-aggregator-client",
+  "version": "1.0.0",
+  "description": "A client package to simplify the use of the solid-aggregator-server.",
+  "main": "bin/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc",
+    "start": "node bin/main.js",
+    "build-start": "npx tsc && node bin/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maartyman/solid-aggregator-client.git"
+  },
+  "author": "Maarten Vandenbrande",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/maartyman/solid-aggregator-client/issues"
+  },
+  "homepage": "https://github.com/maartyman/solid-aggregator-client#readme",
+  "devDependencies": {
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "tslog": "^3.3.4"
+  }
+}
