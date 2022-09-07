@@ -1,7 +1,9 @@
 import fetch from "node-fetch";
-import {QueryExplanation} from "./utils/queryExplanation.js";
 import pkg from "websocket";
+import {HelloWorld} from "../../bin/main.js";
 const {client} = pkg;
+
+new HelloWorld();
 
 let queryExplanation = {
     queryString: `
