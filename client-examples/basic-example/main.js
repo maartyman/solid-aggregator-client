@@ -1,20 +1,20 @@
 import fetch from "node-fetch";
 import pkg from "websocket";
-import {HelloWorld} from "../../bin/main.js";
+//SolidAggregatorClient = require("solid-aggregator-client").SolidAggregatorClient;
 const {client} = pkg;
 
-new HelloWorld();
+//new SolidAggregatorClient();
+
+const addedRegEx = new RegExp(/added (.+)/);
+const removedRegEx = new RegExp(/removed (.+)/);
 
 let queryExplanation = {
     queryString: `
     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-    SELECT ?friend1Name ?friend2Name WHERE {
+    SELECT ?personName WHERE {
       ?p a foaf:Person .
-      ?p foaf:knows ?friend1 .
-      ?friend1 a foaf:Person .
-      ?friend1 foaf:name ?friend1Name .
-      ?friend1 foaf:knows ?friend2 .
-      ?friend2 foaf:name ?friend2Name .
+      ?p foaf:name ?personName .
+      ?p foaf:knows ?p2 .
     }
     `,
     sources: [
@@ -25,6 +25,27 @@ let queryExplanation = {
     //comunicaContext: QueryExplanation.linkTraversalFollowMatchQuery
 }
 
+
+/*
+let queryExplanation = {
+    queryString: `
+    PREFIX schema:<https://schema.org/>
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+    SELECT ?n WHERE {
+        ?s a schema:Person .
+        ?p foaf:name ?n .
+    }
+    `,
+    sources: [
+        "http://localhost:3000/user1/profile/card",
+    ],
+    lenient: true,
+    comunicaVersion: "reasoning",
+    //comunicaContext: QueryExplanation.linkTraversalFollowMatchQuery
+    reasoningRules: "https://raw.githubusercontent.com/maartyman/static-files/master/foaftoschema.n3"
+}
+*/
 fetch("http://localhost:3001", {
     method: "POST",
     body: JSON.stringify(queryExplanation),
@@ -51,11 +72,24 @@ fetch("http://localhost:3001", {
         });
         connection.on('message', function(message) {
             if (message.type === 'utf8') {
-                let parsedData = JSON.parse(message.utf8Data);
-                for (const binding of parsedData.bindings){
-                    console.log("Received: ");
-                    for (const element of Object.keys(binding.entries)) {
-                        console.log("\t" + element + ": " + binding.entries[element].value);
+                let tempMessage = addedRegEx.exec(message.utf8Data);
+                if (tempMessage && tempMessage[1]) {
+                    for (const binding of JSON.parse(tempMessage[1]).bindings){
+                        console.log("added bindings: ");
+                        for (const element of Object.keys(binding.entries)) {
+                            console.log("\t" + element + ": " + binding.entries[element].value);
+                        }
+                    }
+                    return;
+                }
+
+                tempMessage = removedRegEx.exec(message.utf8Data);
+                if (tempMessage && tempMessage[1]) {
+                    for (const binding of JSON.parse(tempMessage[1]).bindings){
+                        console.log("removed bindings: ");
+                        for (const element of Object.keys(binding.entries)) {
+                            console.log("\t" + element + ": " + binding.entries[element].value);
+                        }
                     }
                 }
             }

@@ -1,3 +1,6 @@
+*.js
+*/package-lock.json
+
 # -- custom: --
 bin/
 log/

@@ -1,0 +1,18 @@
+{
+  "name": "solid-client-example",
+  "version": "1.0.0",
+  "description": "A solid client example",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx tsc && node ./main.js"
+  },
+  "author": "Maarten Vandenbrande",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "solid-aggregator-client": "file:../../"
+  }
+}

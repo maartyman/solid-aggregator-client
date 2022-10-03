@@ -105,7 +105,6 @@
     ],
   },
   "exclude": [
-    "node_modules",
-    "client-examples"
+    "node_modules"
   ]
 }

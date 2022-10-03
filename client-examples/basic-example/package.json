@@ -14,7 +14,7 @@
   "dependencies": {
     "node-fetch": "^3.2.10",
     "websocket": "^1.0.34",
-    "solid-aggregator-client": "../../bin/main.js"
+    "solid-aggregator-client": "../../"
   },
   "type": "module"
 }
