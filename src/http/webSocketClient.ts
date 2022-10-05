@@ -1,10 +1,14 @@
 import {Logger} from "tslog";
-import {client, Message} from "websocket";
+import {client, connection, Message} from "websocket";
 
 export class WebSocketClient {
   private readonly logger = new Logger();
   private static instance: WebSocketClient;
   private wsClient = new client();
+  private readonly protocolVersion = "1.0";
+  private readonly generalProtocol = "solid-aggregator-" + this.protocolVersion;
+  private readonly bindingProtocol = this.generalProtocol + "#bindings";
+  private readonly readyProtocol = this.generalProtocol + "#ready";
 
   constructor() {
     this.wsClient.on('connectFailed', (error) => {
@@ -26,19 +30,31 @@ export class WebSocketClient {
     return this.instance;
   }
 
-  public connect(host: string, callBackFn: (message: Message) => void, protocol?: string) {
+  public connect(host: string, connectCB: (conn: connection) => void, messageCB: (message: Message) => void, protocol?: string) {
     this.wsClient.on('connect', (connection) => {
       this.logger.debug('WebSocket Client Connected');
+      connectCB(connection);
       connection.on('error', (error) => {
-        this.logger.debug("Connection Error: " + error.toString());
+        this.logger.error("Connection Error: " + error.toString());
       });
       connection.on('close', () => {
         this.logger.debug('Connection Closed');
       });
-      connection.on('message', callBackFn);
+      connection.on('message', messageCB);
     });
 
     this.wsClient.connect(host, protocol);
   }
 
+  public connectToAggregator(host: string, connectCB: (conn: connection) => void, callBackFn: (message: Message) => void) {
+    this.connect(host, connectCB, callBackFn, this.generalProtocol);
+  }
+
+  public connectToAggregatorReady(host: string, connectCB: (conn: connection) => void, callBackFn: (message: Message) => void) {
+    this.connect(host, connectCB, callBackFn, this.readyProtocol);
+  }
+
+  public connectToAggregatorBindings(host: string, connectCB: (conn: connection) => void, callBackFn: (message: Message) => void) {
+    this.connect(host, connectCB, callBackFn, this.bindingProtocol);
+  }
 }

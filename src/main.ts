@@ -1,6 +1,5 @@
-import {SolidClient} from "./classes/SolidClient";
-
-
+export {SolidClient} from "./classes/SolidClient";
+export {QueryContext} from "./utils/queryContext";
 
 /*
 //TODO changeable queries? => 100% clientside (maybe a schema of what the query will look like)

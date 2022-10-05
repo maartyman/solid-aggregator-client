@@ -6,7 +6,8 @@ import {LocalQuery} from "./LocalQuery";
 import {Bindings} from "@comunica/bindings-factory";
 import {WebSocketClient} from "../http/webSocketClient";
 import {SolidClient} from "../classes/SolidClient";
-import {Message} from "websocket";
+import {connection, Message} from "websocket";
+import fetch from "cross-fetch";
 
 export class AggregatedQuery extends Query {
   private logger = new Logger();
@@ -23,9 +24,9 @@ export class AggregatedQuery extends Query {
       queryString: queryContext.query,
       sources: queryContext.sources,
       reasoningRules: queryContext.reasoningRules,
-      lenient: true
-      //comunicaVersion: "",
-      //comunicaContext: QueryExplanation.linkTraversalFollowMatchQuery
+      lenient: true,
+      comunicaVersion: queryContext.comunicaVersion,
+      comunicaContext: queryContext.comunicaContext
     }
 
     fetch("http://localhost:3001", {
@@ -44,14 +45,25 @@ export class AggregatedQuery extends Query {
             throw new Error("aggregationServerUrl not defined (this shouldn't happen, something is wrong in the package)")
           }
 
-          WebSocketClient.getInstance().connect(this.solidClient.aggregationServerUrl, (message: Message) => {
-            if (message.type === 'utf8') {
-              if (message.utf8Data === "initialized") {
-                this.queryReady = true;
-                this.afterQueryReady();
+          WebSocketClient.getInstance().connectToAggregatorReady(
+            this.solidClient.aggregationServerUrl,
+            (conn: connection) => {
+              conn.sendUTF(tempUUID.toString());
+              this.subscribeOnReady(() => {
+                conn.close();
+              });
+            },
+            (message: Message) => {
+              if (message.type === 'utf8') {
+                this.logger.debug(message.utf8Data);
+                if (message.utf8Data === "initialized") {
+                  this.logger.debug("query initialized");
+                  this.queryReady = true;
+                  this.afterQueryReady();
+                }
               }
             }
-          });
+          );
         }
         else {
           this.logger.debug("Response didn't mention query location");
@@ -69,22 +81,27 @@ export class AggregatedQuery extends Query {
       throw new Error("aggregationServerUrl not defined (this shouldn't happen, something is wrong in the package)")
     }
 
+    await this.queryReadyPromise();
+
     const response = await fetch(this.solidClient.aggregationServerUrl + `/` + this.UUID, {
       method: "GET",
     });
 
-    this.logger.debug(response.status.toString());
     if (response.status == 200 && response.body) {
       const parsedData = await response.json();
 
+      this.logger.debug("Received: ");
       for (const binding of parsedData.bindings){
-        this.logger.debug("Received: ");
+        this.logger.debug("\t bindings: ");
         for (const element of Object.keys(binding.entries)) {
-          this.logger.debug("\t" + element + ": " + binding.entries[element].value);
+          this.logger.debug("\t\t" + element + ": " + binding.entries[element].value);
         }
       }
 
       return parsedData;
+    }
+    else {
+      this.logger.error(response.status.toString());
     }
     return [];
   }

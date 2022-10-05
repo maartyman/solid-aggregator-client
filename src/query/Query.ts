@@ -1,5 +1,6 @@
 import {QueryContext} from "../utils/queryContext";
 import {Bindings} from "@comunica/bindings-factory";
+import {Logger} from "tslog";
 
 export abstract class Query {
   public queryBindings: Array<Bindings>;
@@ -17,17 +18,19 @@ export abstract class Query {
   abstract streamBindings(callBackFn: (bindings: Bindings) => void): void;
 
   async getBindings(): Promise<Bindings[]> {
-    async function callBackToPromise(this: any): Promise<void> {
-      this.subscribeOnFinished(() => {
-        return;
-      });
-    }
-
-    if (!this.queryReady) {
-      await callBackToPromise();
-    }
+    await this.queryReadyPromise();
 
     return this.queryBindings;
+  }
+
+  protected async queryReadyPromise(): Promise<void> {
+    if (!this.queryReady) {
+      await new Promise<void>((resolve, reject) => {
+        this.subscribeOnReady(() => {
+          resolve();
+        });
+      })
+    }
   }
 
   abstract switchQueryType(): Query;

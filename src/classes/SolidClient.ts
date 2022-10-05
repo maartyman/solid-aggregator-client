@@ -8,6 +8,7 @@ import {QueryContext} from "../utils/queryContext";
 import {AggregatedQuery} from "../query/AggregatedQuery";
 import {LocalQuery} from "../query/LocalQuery";
 import {WebSocketClient} from "../http/webSocketClient";
+import fetch from "cross-fetch";
 
 /*
 SolidClient:
@@ -90,7 +91,7 @@ export class SolidClient {
   public async getResource(resource: IResource, accept?: string) {
     //TODO return response
     if (accept) {
-      await this.customFetch(
+      return await this.customFetch(
         resource.url,
         {
           method: "GET",
@@ -101,7 +102,7 @@ export class SolidClient {
       );
     }
     else {
-      await this.customFetch(
+      return await this.customFetch(
         resource.url,
         {
           method: "GET"

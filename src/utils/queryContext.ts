@@ -4,4 +4,6 @@ export type QueryContext = {
   sources: string[];
   reasoningRules?: string;
   aggregated?: boolean;
+  comunicaVersion?: string;
+  comunicaContext?: string;
 };
