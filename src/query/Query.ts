@@ -1,10 +1,9 @@
 import {QueryContext} from "../utils/queryContext";
 import {Bindings} from "@comunica/bindings-factory";
-import {Logger} from "tslog";
 
 export abstract class Query {
   public queryBindings: Array<Bindings>;
-  public queryContext: QueryContext;
+  protected readonly queryContext: QueryContext;
 
   private subscribedReadyFunctions: (() => void)[] = new Array<() => void>();
   protected queryReady: boolean = false;
@@ -15,7 +14,7 @@ export abstract class Query {
     this.queryBindings = queryBindings? queryBindings : new Array<Bindings>();
   }
 
-  abstract streamBindings(callBackFn: (bindings: Bindings) => void): void;
+  abstract streamBindings(callBackFn: (bindings: Bindings, addition: boolean) => void): void;
 
   async getBindings(): Promise<Bindings[]> {
     await this.queryReadyPromise();

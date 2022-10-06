@@ -4,16 +4,14 @@ import {client, connection, Message} from "websocket";
 export class WebSocketClient {
   private readonly logger = new Logger();
   private static instance: WebSocketClient;
-  private wsClient = new client();
   private readonly protocolVersion = "1.0";
   private readonly generalProtocol = "solid-aggregator-" + this.protocolVersion;
   private readonly bindingProtocol = this.generalProtocol + "#bindings";
   private readonly readyProtocol = this.generalProtocol + "#ready";
 
+  private websockets = new Array<client>();
+
   constructor() {
-    this.wsClient.on('connectFailed', (error) => {
-      this.logger.debug('Connect Error: ' + error.toString());
-    });
   }
 
   static setInstance() {
@@ -30,8 +28,16 @@ export class WebSocketClient {
     return this.instance;
   }
 
-  public connect(host: string, connectCB: (conn: connection) => void, messageCB: (message: Message) => void, protocol?: string) {
-    this.wsClient.on('connect', (connection) => {
+  public connect(host: string, connectCB: (conn: connection) => void, protocol?: string) {
+    const wsClient = new client();
+
+    this.websockets.push(wsClient);
+
+    wsClient.on('connectFailed', (error) => {
+      this.logger.debug('Connect Error: ' + error.toString());
+    });
+
+    wsClient.on('connect', (connection) => {
       this.logger.debug('WebSocket Client Connected');
       connectCB(connection);
       connection.on('error', (error) => {
@@ -40,21 +46,20 @@ export class WebSocketClient {
       connection.on('close', () => {
         this.logger.debug('Connection Closed');
       });
-      connection.on('message', messageCB);
     });
 
-    this.wsClient.connect(host, protocol);
+    wsClient.connect(host, protocol);
   }
 
-  public connectToAggregator(host: string, connectCB: (conn: connection) => void, callBackFn: (message: Message) => void) {
-    this.connect(host, connectCB, callBackFn, this.generalProtocol);
+  public connectToAggregator(host: string, connectCB: (conn: connection) => void) {
+    this.connect(host, connectCB, this.generalProtocol);
   }
 
-  public connectToAggregatorReady(host: string, connectCB: (conn: connection) => void, callBackFn: (message: Message) => void) {
-    this.connect(host, connectCB, callBackFn, this.readyProtocol);
+  public connectToAggregatorReady(host: string, connectCB: (conn: connection) => void) {
+    this.connect(host, connectCB, this.readyProtocol);
   }
 
-  public connectToAggregatorBindings(host: string, connectCB: (conn: connection) => void, callBackFn: (message: Message) => void) {
-    this.connect(host, connectCB, callBackFn, this.bindingProtocol);
+  public connectToAggregatorBindings(host: string, connectCB: (conn: connection) => void) {
+    this.connect(host, connectCB, this.bindingProtocol);
   }
 }

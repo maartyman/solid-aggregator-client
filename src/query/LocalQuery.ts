@@ -26,7 +26,7 @@ export class LocalQuery extends Query {
     return Promise.resolve([]);
   }
 
-  streamBindings(callBackFn: (bindings: Bindings) => void): void {
+  streamBindings(callBackFn: (bindings: Bindings, addition: boolean) => void): void {
   }
 
 }
