@@ -5,20 +5,25 @@ import {QueryContext} from "../utils/queryContext";
 import {AggregatedQuery} from "./AggregatedQuery";
 import {Bindings} from "@comunica/bindings-factory";
 import {SolidClient} from "../classes/SolidClient";
-import {QueryExplanation} from "./queryExplanation";
-import {QueryEngine} from "@comunica/query-sparql";
+import {QueryExplanation} from "../queryExecutor/queryExplanation";
+import {QueryExecutor} from "../queryExecutor/queryExecutor";
 
 export class LocalQuery extends Query {
   private logger = new Logger(loggerSettings);
   private readonly solidClient: SolidClient;
-  private queryEngine: QueryEngine | undefined;
+  private queryExecutor: QueryExecutor | null;
+  private readonly queryExplanation: QueryExplanation;
+  private guardingEnabled = false;
+  setGuardingEnabled = (val: boolean) => this.guardingEnabled = val;
+  isGuardingEnabled = () => this.guardingEnabled;
 
   constructor(solidClient: SolidClient, queryContext: QueryContext, queryBindings?: Array<Bindings>) {
     super(queryContext, queryBindings);
     this.logger.info("AggregatedQuery");
     this.solidClient = solidClient;
+    this.guardingEnabled = (queryContext.local == undefined)? false : queryContext.local.guarded
 
-    const queryExplanation = new QueryExplanation(
+    this.queryExplanation = new QueryExplanation(
       queryContext.query,
       queryContext.sources,
       queryContext.comunicaVersion,
@@ -27,28 +32,66 @@ export class LocalQuery extends Query {
       true
     );
 
-    const queryEngineFactory = require(queryExplanation.comunicaVersion.toString()).QueryEngineFactory;
+    this.queryExecutor = new QueryExecutor(
+      "",
+      this.queryExplanation,
+      this.guardingEnabled
+    );
 
-    this.logger.debug("comunica context path = " + queryExplanation.comunicaContext);
-    new queryEngineFactory().create({
-      configPath: queryExplanation.comunicaContext,
-    }).then(async (queryEngine: QueryEngine) => {
-      this.queryEngine = queryEngine;
-      this.logger.debug(`Comunica engine build`);
-      
+    this.queryExecutor.on("queryEvent", (value) => {
+      if (value === "initialized") {
+        this.afterQueryReady();
+      }
     });
   }
 
-  getBindings(): Promise<Bindings[]> {
-    return Promise.resolve([]);
+  private checkQueryExecutor(): void {
+    if (this.queryExecutor == null) {
+      this.queryExecutor = new QueryExecutor(
+        "",
+        this.queryExplanation,
+        this.guardingEnabled
+      );
+
+      this.queryExecutor.on("queryEvent", (value) => {
+        if (value === "initialized") {
+          this.afterQueryReady();
+        }
+      });
+    }
   }
 
-  streamBindings(callBackFn: (bindings: Bindings, addition: boolean) => void): void {
+  async getBindings(): Promise<Bindings[]> {
+    this.checkQueryExecutor();
 
+    await this.queryReadyPromise();
+
+    // @ts-ignore
+    this.queryBindings = this.queryExecutor.getData();
+
+    return this.queryBindings;
+  }
+
+  streamBindings(cb: (bindings: Bindings, addition: boolean) => void): void {
+    this.checkQueryExecutor();
+
+    // @ts-ignore
+    this.queryExecutor.on("binding", (bindings: Bindings[], addition: boolean) => {
+      for (const binding of bindings) {
+        cb(binding, addition);
+      }
+    });
   }
 
   switchQueryType(): AggregatedQuery {
     //TODO implement
     return new AggregatedQuery(this.solidClient, this.queryContext, this.queryBindings);
+  }
+
+  delete(): void {
+    if (this.queryExecutor != null) {
+      this.queryExecutor.delete();
+      this.queryExecutor = null;
+    }
   }
 }

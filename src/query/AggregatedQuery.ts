@@ -7,7 +7,7 @@ import {WebSocketClient} from "../http/webSocketClient";
 import {SolidClient} from "../classes/SolidClient";
 import {connection} from "websocket";
 import fetch from "cross-fetch";
-import {jsonToBindings} from "../utils/jsonToBindings";
+import {jsonObjectToBindings, jsonStringToBindings} from "../utils/jsonToBindings";
 
 export class AggregatedQuery extends Query {
   private logger = new Logger();
@@ -99,13 +99,13 @@ export class AggregatedQuery extends Query {
       if (message.type === 'utf8') {
         let tempMessage = this.addedRegEx.exec(message.utf8Data);
         if (tempMessage && tempMessage[1]) {
-          cb(jsonToBindings(tempMessage[1]), true);
+          cb(jsonStringToBindings(tempMessage[1]), true);
           return;
         }
 
         tempMessage = this.removedRegEx.exec(message.utf8Data);
         if (tempMessage && tempMessage[1]) {
-          cb(jsonToBindings(tempMessage[1]), false);
+          cb(jsonStringToBindings(tempMessage[1]), false);
         }
       }
     });
@@ -167,15 +167,10 @@ export class AggregatedQuery extends Query {
     if (response.status == 200 && response.body) {
       const parsedData = await response.json();
 
-      this.logger.debug("Received: ");
-      for (const binding of parsedData){
-        this.logger.debug("\t bindings: ");
-        for (const element of Object.keys(binding.entries)) {
-          this.logger.debug("\t\t" + element + ": " + binding.entries[element].value);
-        }
+      this.queryBindings = [];
+      for (const bindingJson of parsedData) {
+        this.queryBindings.push(jsonObjectToBindings(bindingJson));
       }
-
-      this.queryBindings = parsedData;
     }
     else {
       this.logger.error(response.status.toString());
@@ -186,5 +181,9 @@ export class AggregatedQuery extends Query {
   switchQueryType(): LocalQuery {
     //TODO implement
     return new LocalQuery(this.solidClient, this.queryContext, this.queryBindings);
+  }
+
+  delete() {
+    //TODO
   }
 }

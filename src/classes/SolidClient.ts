@@ -41,6 +41,7 @@ export class SolidClient {
   }
 
   public makeQuery(queryContext: QueryContext): Query {
+    //TODO check aggregator availability
     if(queryContext.aggregated && this.aggregationServerUrl) {
       return QueryFactory.makeAggregatedQuery(this, queryContext);
     }
