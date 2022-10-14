@@ -1,4 +1,6 @@
-export function arrayEquality(array1: [any], array2: [any]): boolean {
+import {IDataSource} from "@comunica/types";
+
+export function arrayEquality(array1: [IDataSource, ...IDataSource[]], array2: [IDataSource, ...IDataSource[]]): boolean {
   for (const element1 of array1) {
     let equal = false;
     for (const element2 of array2) {
