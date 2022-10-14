@@ -1,3 +1,4 @@
+const log = require('why-is-node-running')
 import {SolidClient, QueryContext} from "solid-aggregator-client";
 import fetch from "cross-fetch";
 
@@ -7,30 +8,40 @@ const solidClient = new SolidClient(
   "http://localhost:3001"
 );
 
-const queryContext: QueryContext = {
-  query: `
-  PREFIX snvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
-  
-  SELECT ?firstName ?lastName WHERE {
-    <${solidClient.podUrl}profile/card#me> snvoc:knows ?n . 
-    ?n snvoc:hasPerson ?p2 .
-    ?p2 snvoc:firstName ?firstName .
-    ?p2 snvoc:lastName ?lastName .
-  }
-  `,
-  sources: ["http://localhost:3000/pods/00000000000000000933/profile/card"],
-  aggregated: true,
-  comunicaVersion: "link-traversal"
-};
+function doQuery() {
+  const queryContext: QueryContext = {
+    query: `
+    PREFIX snvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
+    
+    SELECT ?n WHERE {
+      <${solidClient.podUrl}profile/card#me> snvoc:knows ?n . 
+    }
+    `,
+    sources: ["http://localhost:3000/pods/00000000000000000933/profile/card"],
+    aggregated: false,
+    local: {
+      guarded: true
+    }
+    //comunicaVersion: "link-traversal"
+  };
 
-const query = solidClient.makeQuery(queryContext);
+  let query = solidClient.makeQuery(queryContext);
+
+  query.getBindings().then((bindings) => {
+    console.log("Received: ");
+    for (const binding of bindings) {
+      console.log("\tbindings: ");
+      binding.forEach((value, key) => {
+        console.log("\t\t" + key.value + ": " + value.value);
+      });
+    }
+    query.delete();
+  });
+}
+
+doQuery();
 
 /*
-query.getBindings().then((bindings) => {
-
-});
-*/
-
 query.streamBindings((bindings, addition) => {
   if (addition) {
     console.log("added bindings: ");
@@ -45,6 +56,7 @@ query.streamBindings((bindings, addition) => {
     });
   }
 });
+*/
 
 /*
 solidClient.getResource("http://localhost:3000/pods/00000000000000000065/profile/card")

@@ -14,7 +14,7 @@ export abstract class Query {
     this.queryBindings = queryBindings? queryBindings : new Array<Bindings>();
   }
 
-  abstract streamBindings(callBackFn: (bindings: Bindings, addition: boolean) => void): void;
+  abstract streamBindings(cb: (bindings: Bindings, addition: boolean) => void): void;
 
   async getBindings(): Promise<Bindings[]> {
     await this.queryReadyPromise();
@@ -34,8 +34,8 @@ export abstract class Query {
 
   abstract switchQueryType(): Query;
 
-  subscribeOnReady(callBackFn: () => void): void {
-    this.subscribedReadyFunctions.push(callBackFn);
+  subscribeOnReady(cb: () => void): void {
+    this.subscribedReadyFunctions.push(cb);
   }
 
   protected afterQueryReady() {
@@ -43,4 +43,6 @@ export abstract class Query {
       value();
     });
   }
+
+  abstract delete(): void;
 }

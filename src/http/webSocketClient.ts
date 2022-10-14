@@ -1,8 +1,9 @@
 import {Logger} from "tslog";
 import {client, connection, Message} from "websocket";
+import {loggerSettings} from "../utils/loggerSettings";
 
 export class WebSocketClient {
-  private readonly logger = new Logger();
+  private readonly logger = new Logger(loggerSettings);
   private static instance: WebSocketClient;
   private readonly protocolVersion = "1.0";
   private readonly generalProtocol = "solid-aggregator-" + this.protocolVersion;
