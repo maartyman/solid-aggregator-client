@@ -9,6 +9,8 @@ import {AggregatedQuery} from "../query/AggregatedQuery";
 import {LocalQuery} from "../query/LocalQuery";
 import {WebSocketClient} from "../http/webSocketClient";
 import fetch from "cross-fetch";
+import {loggerSettings} from "../utils/loggerSettings";
+import {TLogLevelName} from "tslog";
 
 /*
 SolidClient:
@@ -32,12 +34,13 @@ export class SolidClient {
 
   private readonly webSocketClient = WebSocketClient.setInstance();
 
-  constructor(podUrl: string, customFetch?: (input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>, aggregationServerUrl?: string) {
+  constructor(podUrl: string, customFetch?: (input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>, aggregationServerUrl?: string, debug?: TLogLevelName) {
     //TODO make sure the URL's are normalized (no trailing backslash)
 
     this.podUrl = podUrl;
     this.customFetch = customFetch? customFetch : fetch;
     this.aggregationServerUrl = aggregationServerUrl;
+    loggerSettings.minLevel = debug;
   }
 
   public makeQuery(queryContext: QueryContext): Query {

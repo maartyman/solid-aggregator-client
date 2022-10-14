@@ -19,7 +19,7 @@ export class LocalQuery extends Query {
 
   constructor(solidClient: SolidClient, queryContext: QueryContext, queryBindings?: Array<Bindings>) {
     super(queryContext, queryBindings);
-    this.logger.info("AggregatedQuery");
+    this.logger.info("LocalQuery");
     this.solidClient = solidClient;
     this.guardingEnabled = (queryContext.local == undefined)? false : queryContext.local.guarded
 

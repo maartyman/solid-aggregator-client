@@ -8,9 +8,10 @@ import {SolidClient} from "../classes/SolidClient";
 import {connection} from "websocket";
 import fetch from "cross-fetch";
 import {jsonObjectToBindings, jsonStringToBindings} from "../utils/jsonToBindings";
+import {loggerSettings} from "../utils/loggerSettings";
 
 export class AggregatedQuery extends Query {
-  private logger = new Logger();
+  private logger = new Logger(loggerSettings);
   private UUID: string | undefined;
   private readonly solidClient: SolidClient;
   private connection?: connection;
