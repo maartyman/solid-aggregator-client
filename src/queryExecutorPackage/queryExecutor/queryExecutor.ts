@@ -2,7 +2,7 @@ import {Logger} from "tslog";
 import {Bindings} from "@comunica/bindings-factory";
 import {QueryEngine} from "@comunica/query-sparql";
 import {QueryExplanation} from "./queryExplanation";
-import {loggerSettings} from "../utils/loggerSettings";
+import {loggerSettings} from "../../utils/loggerSettings";
 import {KeysRdfReason} from "@comunica/reasoning-context-entries";
 import {Store} from "n3";
 import {QueryExecutorFactory} from "./queryExecutorFactory";
@@ -63,7 +63,7 @@ export class QueryExecutor extends Actor<string> {
       throw new TypeError("queryEngine is undefined");
     }
 
-    this.logger.debug(`Starting comunica query, with reasoningRules: \n${ this.queryExplanation.reasoningRules.toString() }`);
+    this.logger.debug(`Starting comunica query, with reasoningRules: \n${ this.queryExplanation.reasoningRules }`);
 
     /*
     TODO temporarily turning this off as it doesn't work => query explanation will give the used resources (I think)
@@ -77,11 +77,16 @@ export class QueryExecutor extends Actor<string> {
     await this.queryEngine.invalidateHttpCache();
     this.changedResources.splice(0);
 
+    this.logger.debug(this.queryExplanation.queryString.toString());
+    this.logger.debug(this.queryExplanation.sources);
+    this.logger.debug(this.queryExplanation.reasoningRules);
+    this.logger.debug(this.queryExplanation.lenient);
+
     const bindingsStream = await this.queryEngine.queryBindings(
       this.queryExplanation.queryString.toString(), {
       sources: this.queryExplanation.sources,
       [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
-      [KeysRdfReason.rules.name]: this.queryExplanation.reasoningRules.toString(),
+      [KeysRdfReason.rules.name]: this.queryExplanation.reasoningRules,
       fetch: this.customFetch.bind(this),
       lenient: this.queryExplanation.lenient
     });
@@ -102,6 +107,7 @@ export class QueryExecutor extends Actor<string> {
     });
 
     bindingsStream.on('end', () => {
+      this.logger.debug("query end");
       this.afterQueryCleanup();
     });
 
@@ -144,7 +150,17 @@ export class QueryExecutor extends Actor<string> {
     return fetch(input, init);
   }
 
-  public getData() : Bindings[] {
+  public async getData() : Promise<Bindings[]> {
+    if (!this.guardingEnabled){
+      this.executeQuery();
+      await new Promise<void>((resolve) => {
+        this.on("queryEvent", (arg: string) => {
+          if (arg === "done") {
+            resolve();
+          }
+        })
+      });
+    }
     const bindings: Bindings[] = [];
     this.results.forEach((value) => {
       if (value.used) {

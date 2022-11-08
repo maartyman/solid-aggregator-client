@@ -11,6 +11,11 @@ export class LocalQueryEngineFactory {
       return tempEngine;
     }
 
+    if (comunicaVersion == "@comunica/query-sparql-reasoning") {
+      const QueryEngine = require("@comunica/query-sparql-reasoning").QueryEngine;
+      return new QueryEngine();
+    }
+
     const queryEngineFactory = require(comunicaVersion).QueryEngineFactory;
 
     tempEngine = (new queryEngineFactory() as QueryEngineFactory).create({

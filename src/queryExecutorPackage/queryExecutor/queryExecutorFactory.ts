@@ -3,7 +3,7 @@ import {QueryExplanation} from "./queryExplanation";
 import { v4 as uuidv4 } from 'uuid';
 import {arrayEquality} from "../utils/arrayEquality";
 import {Logger} from "tslog";
-import {loggerSettings} from "../utils/loggerSettings";
+import {loggerSettings} from "../../utils/loggerSettings";
 import {Factory} from "../utils/actor-factory/factory";
 
 export class QueryExecutorFactory extends Factory<string, QueryExecutor> {

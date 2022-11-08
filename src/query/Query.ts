@@ -39,6 +39,7 @@ export abstract class Query {
   }
 
   protected afterQueryReady() {
+    this.queryReady = true;
     this.subscribedReadyFunctions.forEach((value) => {
       value();
     });

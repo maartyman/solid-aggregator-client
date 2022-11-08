@@ -1,6 +1,6 @@
 import {Factory} from "../utils/actor-factory/factory";
 import {Logger} from "tslog";
-import {loggerSettings} from "../utils/loggerSettings";
+import {loggerSettings} from "../../utils/loggerSettings";
 import {GuardPolling} from "./guardPolling";
 import {GuardWebSockets} from "./guardWebSockets";
 import {Guard} from "./guard";
