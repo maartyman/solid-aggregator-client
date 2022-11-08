@@ -5,8 +5,8 @@ import {QueryContext} from "../utils/queryContext";
 import {AggregatedQuery} from "./AggregatedQuery";
 import {Bindings} from "@comunica/bindings-factory";
 import {SolidClient} from "../classes/SolidClient";
-import {QueryExplanation} from "../queryExecutor/queryExplanation";
-import {QueryExecutor} from "../queryExecutor/queryExecutor";
+import {QueryExecutor} from "../queryExecutorPackage/queryExecutor/queryExecutor";
+import {QueryExplanation} from "../queryExecutorPackage/queryExecutor/queryExplanation";
 
 export class LocalQuery extends Query {
   private logger = new Logger(loggerSettings);
@@ -29,7 +29,7 @@ export class LocalQuery extends Query {
       queryContext.comunicaVersion,
       queryContext.comunicaContext,
       queryContext.reasoningRules,
-      true
+      false
     );
 
     this.queryExecutor = new QueryExecutor(
@@ -67,7 +67,7 @@ export class LocalQuery extends Query {
     await this.queryReadyPromise();
 
     // @ts-ignore
-    this.queryBindings = this.queryExecutor.getData();
+    this.queryBindings = await this.queryExecutor.getData();
 
     return this.queryBindings;
   }

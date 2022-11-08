@@ -1,3 +1,4 @@
+import {TComunicaContext, TComunicaVersion} from "../queryExecutorPackage/queryExecutor/queryExplanation";
 
 export type QueryContext = {
   query: string;
@@ -7,6 +8,6 @@ export type QueryContext = {
   local?: {
     guarded: boolean
   }
-  comunicaVersion?: string;
-  comunicaContext?: string;
+  comunicaVersion?: TComunicaVersion;
+  comunicaContext?: TComunicaContext;
 };

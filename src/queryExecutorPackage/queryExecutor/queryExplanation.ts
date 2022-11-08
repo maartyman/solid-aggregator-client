@@ -5,12 +5,12 @@ import * as path from "path";
 export class QueryExplanation {
   public readonly queryString: String;
   public readonly sources: [IDataSource, ...IDataSource[]];
-  public readonly comunicaVersion: String;
-  public readonly comunicaContext: String;
+  public readonly comunicaVersion: string;
+  public readonly comunicaContext: string;
   public readonly reasoningRules: String;
   public readonly lenient: boolean;
 
-  constructor(queryString: String, sources: [IDataSource, ...IDataSource[]], comunicaVersion?: String, context?: String, reasoningRules?: String, lenient?: boolean) {
+  constructor(queryString: String, sources: [IDataSource, ...IDataSource[]], comunicaVersion?: TComunicaVersion, context?: TComunicaContext, reasoningRules?: String, lenient?: boolean) {
     this.queryString = queryString;
     this.sources = sources;
     switch (comunicaVersion) {
@@ -97,5 +97,24 @@ export class QueryExplanation {
     this.reasoningRules = resolveUndefined(reasoningRules, "");
     this.lenient = resolveUndefined(lenient, false);
   }
-
 }
+
+export type TComunicaVersion = "default"
+  | "reasoning"
+  | "link-traversal"
+  | "link-traversal-solid"
+  | "solid";
+
+export type TComunicaContext = "default"
+  | "reasoning-default"
+  | "link-traversal-default"
+  | "link-traversal-follow-all"
+  | "link-traversal-follow-content-policies-conditional"
+  | "link-traversal-follow-content-policies-restrictive"
+  | "link-traversal-follow-match-pattern-bound"
+  | "link-traversal-follow-match-query"
+  | "link-traversal-solid-default"
+  | "link-traversal-solid-prov-sources"
+  | "link-traversal-solid-shapetrees"
+  | "link-traversal-solid-single-pod"
+  | "solid-default"

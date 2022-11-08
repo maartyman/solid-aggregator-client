@@ -31,8 +31,7 @@ export class SolidClient {
   public readonly podUrl: string;
   public readonly customFetch: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>);
   public readonly aggregationServerUrl?: string;
-
-  private readonly webSocketClient = WebSocketClient.setInstance();
+  private readonly webSocketClient;
 
   constructor(podUrl: string, customFetch?: (input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>, aggregationServerUrl?: string, debug?: TLogLevelName) {
     //TODO make sure the URL's are normalized (no trailing backslash)
@@ -41,6 +40,7 @@ export class SolidClient {
     this.customFetch = customFetch? customFetch : fetch;
     this.aggregationServerUrl = aggregationServerUrl;
     loggerSettings.minLevel = debug;
+    this.webSocketClient = WebSocketClient.setInstance();
   }
 
   public makeQuery(queryContext: QueryContext): Query {

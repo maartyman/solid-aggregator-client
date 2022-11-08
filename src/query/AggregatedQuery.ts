@@ -29,7 +29,7 @@ export class AggregatedQuery extends Query {
       queryString: queryContext.query,
       sources: queryContext.sources,
       reasoningRules: queryContext.reasoningRules,
-      lenient: true,
+      lenient: false,
       comunicaVersion: queryContext.comunicaVersion,
       comunicaContext: queryContext.comunicaContext
     }
@@ -57,7 +57,7 @@ export class AggregatedQuery extends Query {
           WebSocketClient.getInstance().connectToAggregatorReady(
             this.solidClient.aggregationServerUrl,
             (conn: connection) => {
-              this.logger.debug("connectToAggregatorReady: connection established")
+              this.logger.debug("connectToAggregatorReady: connection established");
               conn.sendUTF(tempUUID.toString());
               this.subscribeOnReady(() => {
                 conn.close();
@@ -67,7 +67,6 @@ export class AggregatedQuery extends Query {
                   this.logger.debug(message.utf8Data);
                   if (message.utf8Data === "initialized") {
                     this.logger.debug("query initialized");
-                    this.queryReady = true;
                     this.afterQueryReady();
                   }
                 }
@@ -176,6 +175,7 @@ export class AggregatedQuery extends Query {
     else {
       this.logger.error(response.status.toString());
     }
+
     return this.queryBindings;
   }
 
