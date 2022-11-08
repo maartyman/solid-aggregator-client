@@ -28,7 +28,8 @@
   "devDependencies": {
     "@types/n3": "^1.10.4",
     "typescript": "^4.7.4",
-    "@comunica/reasoning-types": "^0.2.0"
+    "@comunica/reasoning-types": "^0.2.0",
+    "@comunica/types": "^2.4.0"
   },
   "dependencies": {
     "@comunica/query-sparql-reasoning": "^0.2.0",
@@ -39,6 +40,7 @@
     "@comunica/query-sparql-link-traversal-solid": "^0.0.2-alpha.6.0",
     "@comunica/query-sparql-solid": "^2.2.0",
     "@comunica/config-query-sparql-link-traversal": "^0.0.2-alpha.5.0",
+    "@comunica/bus-normalize-rule": "^0.2.0",
     "@types/websocket": "^1.0.5",
     "cross-fetch": "^3.1.5",
     "n3": "^1.16.2",

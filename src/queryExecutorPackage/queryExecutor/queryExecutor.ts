@@ -1,20 +1,20 @@
 import {Logger} from "tslog";
 import {Bindings} from "@comunica/bindings-factory";
-import {QueryEngine} from "@comunica/query-sparql";
 import {QueryExplanation} from "./queryExplanation";
 import {loggerSettings} from "../../utils/loggerSettings";
 import {KeysRdfReason} from "@comunica/reasoning-context-entries";
-import {Store} from "n3";
 import {QueryExecutorFactory} from "./queryExecutorFactory";
 import {Actor} from "../utils/actor-factory/actor";
 import {Guard} from "../guard/guard";
 import {GuardPolling} from "../guard/guardPolling";
 import {LocalQueryEngineFactory} from "../queryEngineFactory/localQueryEngineFactory";
+import {Worker,MessageChannel} from "node:worker_threads";
+import {jsonStringToBindings} from "../../utils/jsonToBindings";
 
 export class QueryExecutor extends Actor<string> {
   static factory = new QueryExecutorFactory();
   private readonly logger = new Logger(loggerSettings);
-  private queryEngine: QueryEngine | undefined;
+  private queryEngine: Worker | undefined;
   private results = new Map<string, { bindings: Bindings, used: boolean }>();
   private queryEngineBuild = false;
   private queryFinished = false;
@@ -37,7 +37,7 @@ export class QueryExecutor extends Actor<string> {
     LocalQueryEngineFactory.getOrCreate(
       queryExplanation.comunicaVersion.toString(),
       queryExplanation.comunicaContext.toString()
-    ).then((queryEngine: QueryEngine) => {
+    ).then((queryEngine: Worker) => {
       this.queryEngine = queryEngine;
       this.logger.debug(`Comunica engine build`);
       this.queryEngineBuild = true;
@@ -74,15 +74,11 @@ export class QueryExecutor extends Actor<string> {
     await Promise.all(parallelPromise);
 
      */
-    await this.queryEngine.invalidateHttpCache();
+    this.queryEngine.postMessage("invalidateHttpCache");
     this.changedResources.splice(0);
 
-    this.logger.debug(this.queryExplanation.queryString.toString());
-    this.logger.debug(this.queryExplanation.sources);
-    this.logger.debug(this.queryExplanation.reasoningRules);
-    this.logger.debug(this.queryExplanation.lenient);
-
-    const bindingsStream = await this.queryEngine.queryBindings(
+    /*
+    this.queryEngine.postMessage(
       this.queryExplanation.queryString.toString(), {
       sources: this.queryExplanation.sources,
       [KeysRdfReason.implicitDatasetFactory.name]: () => new Store(),
@@ -90,35 +86,59 @@ export class QueryExecutor extends Actor<string> {
       fetch: this.customFetch.bind(this),
       lenient: this.queryExplanation.lenient
     });
+    */
 
-    bindingsStream.on('data', (binding: Bindings) => {
-      //TODO handle delete not only additions
+    const messageChannel = new MessageChannel();
+    const bindingsStream = messageChannel.port1;
+    const messageChannelIn = messageChannel.port2;
 
-      this.logger.debug(`on data: ${ binding.toString() }`);
-      const result = this.results.get(binding.toString());
+    this.queryEngine.postMessage(
+      [
+        messageChannelIn,
+        this.queryExplanation.queryString.toString(),
+        {
+          sources: this.queryExplanation.sources,
+          [KeysRdfReason.rules.name]: this.queryExplanation.reasoningRules,
+          lenient: this.queryExplanation.lenient
+        }
+      ],
+      [
+        messageChannelIn
+      ]
+    );
 
-      if (!result) {
-        this.results.set(binding.toString(), {bindings: binding , used: true});
-        this.emit("binding", [binding], true);
+    bindingsStream.on('message', (value: {messageType: string, message: any}) => {
+      switch (value.messageType) {
+        case "data":
+          const binding = jsonStringToBindings(value.message);
+          this.logger.debug(`on data: ${ binding.toString() }`);
+          const result = this.results.get(binding.toString());
+
+          if (!result) {
+            this.results.set(binding.toString(), {bindings: binding, used: true});
+            this.emit("binding", binding, true);
+          }
+          else {
+            result.used = true;
+          }
+          break;
+        case "end":
+          this.logger.debug("query end");
+          this.afterQueryCleanup();
+          break;
+        case "error":
+          //TODO solve error
+          this.logger.error(value.message);
+          this.emit("queryEvent", "error");
+          break;
+        case "fetch":
+          this.customFetch(value.message);
+          break;
       }
-      else {
-        result.used = true;
-      }
-    });
-
-    bindingsStream.on('end', () => {
-      this.logger.debug("query end");
-      this.afterQueryCleanup();
-    });
-
-    bindingsStream.on('error', (error: any) => {
-      //TODO solve error
-      this.logger.error(error);
-      this.emit("queryEvent", "error");
     });
   }
 
-  private async customFetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response> {
+  private async customFetch(input: RequestInfo | URL) {
     //TODO check used resources: delete the ones that aren't used add the new ones
     //TODO possibly wait until the resource is actively guarded
 
@@ -146,8 +166,6 @@ export class QueryExecutor extends Actor<string> {
 
       this.guards.set(input, guardObject);
     }
-
-    return fetch(input, init);
   }
 
   public async getData() : Promise<Bindings[]> {
@@ -230,6 +248,10 @@ export class QueryExecutor extends Actor<string> {
       value.guard.delete();
     });
     super.delete();
+    LocalQueryEngineFactory.deleteWorker(
+      this.queryExplanation.comunicaVersion.toString(),
+      this.queryExplanation.comunicaContext.toString()
+    );
   }
 }
 
