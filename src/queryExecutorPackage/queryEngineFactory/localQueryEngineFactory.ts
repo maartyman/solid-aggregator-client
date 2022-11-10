@@ -1,33 +1,50 @@
-import {QueryEngine} from "@comunica/query-sparql";
-import {QueryEngineFactory} from "@comunica/query-sparql";
+import {Worker} from "node:worker_threads";
 
 export class LocalQueryEngineFactory {
-  private static engines = new Map<string, QueryEngine | Promise<QueryEngine>>();
+  private static engines = new Map<string, {count: number, worker:Promise<Worker>}>();
 
-  static async getOrCreate(comunicaVersion: string, comunicaContext: string): Promise<QueryEngine> {
-    let tempEngine: QueryEngine | Promise<QueryEngine> | undefined = this.engines.get(comunicaVersion + comunicaContext);
+  static async getOrCreate(comunicaVersion: string, comunicaContext: string): Promise<Worker> {
+    let tempWorker = this.engines.get(comunicaVersion + comunicaContext);
 
-    if (tempEngine != undefined) {
-      return tempEngine;
+    if (tempWorker != undefined) {
+      tempWorker.count++;
+      return tempWorker.worker;
     }
 
-    if (comunicaVersion == "@comunica/query-sparql-reasoning") {
-      const QueryEngine = require("@comunica/query-sparql-reasoning").QueryEngine;
-      return new QueryEngine();
-    }
+    const worker = new Worker(
+      __dirname + "/queryEngineWorker.js",
+      {
+        workerData: [
+          comunicaVersion,
+          comunicaContext
+        ]
+      }
+    );
 
-    const queryEngineFactory = require(comunicaVersion).QueryEngineFactory;
-
-    tempEngine = (new queryEngineFactory() as QueryEngineFactory).create({
-      configPath: comunicaContext,
+    const workerPromise = new Promise<Worker>((resolve) => {
+      worker.on("message", (value: string) => {
+        if (value === "done") {
+          resolve(worker);
+        }
+      });
     });
 
-    if (tempEngine == undefined) {
-      throw new Error("this shouldn't happen");
+    this.engines.set(comunicaVersion + comunicaContext, {count: 1,worker: workerPromise});
+
+    return workerPromise
+  }
+
+  static deleteWorker(comunicaVersion: string, comunicaContext: string): void {
+    let tempWorker = this.engines.get(comunicaVersion + comunicaContext);
+
+    if (tempWorker) {
+      tempWorker.count--;
+      if (tempWorker.count == 0) {
+        tempWorker.worker.then((worker) => {
+          worker.terminate();
+        })
+        this.engines.delete(comunicaVersion + comunicaContext);
+      }
     }
-
-    this.engines.set(comunicaVersion + comunicaContext, tempEngine);
-
-    return tempEngine;
   }
 }
