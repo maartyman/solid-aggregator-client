@@ -29,7 +29,7 @@ export class LocalQuery extends Query {
       queryContext.comunicaVersion,
       queryContext.comunicaContext,
       queryContext.reasoningRules,
-      false
+      true
     );
 
     this.queryExecutor = new QueryExecutor(
@@ -76,10 +76,8 @@ export class LocalQuery extends Query {
     this.checkQueryExecutor();
 
     // @ts-ignore
-    this.queryExecutor.on("binding", (bindings: Bindings[], addition: boolean) => {
-      for (const binding of bindings) {
-        cb(binding, addition);
-      }
+    this.queryExecutor.on("binding", (bindings: Bindings, addition: boolean) => {
+        cb(bindings, addition);
     });
   }
 

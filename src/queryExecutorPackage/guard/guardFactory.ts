@@ -7,8 +7,6 @@ import {Guard} from "./guard";
 import {connection} from "websocket";
 
 export class GuardFactory extends Factory<string, Guard> {
-  private readonly logger = new Logger(loggerSettings);
-
   constructor() {
     super(Guard);
   }
@@ -76,25 +74,25 @@ export class GuardFactory extends Factory<string, Guard> {
       //TODO if ready link it to the resource and delete the polling resource
     }
     else {
-      this.logger.warn("Guardtype: " + guardType + " doesn't exist");
+      new Logger(loggerSettings).warn("Guardtype: " + guardType + " doesn't exist");
     }
   }
 
   private async checkWebSocketAvailability(host: string): Promise<boolean> {
     //TODO is this the best solution?
-    this.logger.debug("Checking pod availability");
+    new Logger(loggerSettings).debug("Checking pod availability");
     const WebSocketClient = require('websocket').client;
     const ws = new WebSocketClient();
 
     const promise = new Promise<boolean>( resolve => {
       ws.on('connect', (connection: connection) => {
-        this.logger.debug("Checking pod availability: connection succeeded");
+        new Logger(loggerSettings).debug("Checking pod availability: connection succeeded");
         ws.abort();
         resolve(true);
       });
 
       ws.on("connectFailed", () => {
-        this.logger.debug("Checking pod availability: connection failed");
+        new Logger(loggerSettings).debug("Checking pod availability: connection failed");
         ws.abort();
         resolve(false);
       });

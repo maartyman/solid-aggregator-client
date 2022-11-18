@@ -1,7 +1,7 @@
 import {RDFResource} from "./RDFResource";
-import N3 from "n3";
+import N3, {DataFactory, Parser, Store} from "n3";
 import {IResource} from "./interfaces/IResource";
-import {N3StoreToTurtle} from "../utils/N3StoreToTurtle";
+import {N3StoreToTriples} from "../utils/N3StoreToTurtle";
 import {Query} from "../query/Query";
 import {QueryFactory} from "../query/QueryFactory";
 import {QueryContext} from "../utils/queryContext";
@@ -10,7 +10,7 @@ import {LocalQuery} from "../query/LocalQuery";
 import {WebSocketClient} from "../http/webSocketClient";
 import fetch from "cross-fetch";
 import {loggerSettings} from "../utils/loggerSettings";
-import {TLogLevelName} from "tslog";
+import {Logger, TLogLevelName} from "tslog";
 
 /*
 SolidClient:
@@ -32,14 +32,16 @@ export class SolidClient {
   public readonly customFetch: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>);
   public readonly aggregationServerUrl?: string;
   private readonly webSocketClient;
+  private readonly logger;
 
   constructor(podUrl: string, customFetch?: (input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>, aggregationServerUrl?: string, debug?: TLogLevelName) {
     //TODO make sure the URL's are normalized (no trailing backslash)
 
+    loggerSettings.minLevel = debug;
     this.podUrl = podUrl;
     this.customFetch = customFetch? customFetch : fetch;
     this.aggregationServerUrl = aggregationServerUrl;
-    loggerSettings.minLevel = debug;
+    this.logger = new Logger(loggerSettings);
     this.webSocketClient = WebSocketClient.setInstance();
   }
 
@@ -62,7 +64,7 @@ export class SolidClient {
   public async makeResource(resource: IResource) {
     let body;
     if (resource.data instanceof N3.Store) {
-      N3StoreToTurtle(resource.data);
+      body = await N3StoreToTriples(resource.data);
     }
     else if(resource.data) {
       body = resource.data;
@@ -71,7 +73,7 @@ export class SolidClient {
       body = "";
     }
 
-    await this.customFetch(
+    return this.customFetch(
       resource.url,
       {
         method: "PUT",
@@ -93,9 +95,26 @@ export class SolidClient {
   }
 
   public async getResource(resource: IResource, accept?: string) {
-    //TODO return response
-    if (accept) {
-      return await this.customFetch(
+    if (resource instanceof RDFResource) {
+      return this.customFetch(
+        resource.url,
+        {
+          method: "GET",
+        }
+      ).then(async (response) => {
+        let text = await response.text();
+        const parser = new Parser({
+          blankNodePrefix: ""
+        });
+        let quads = parser.parse(text);
+        resource.data = new Store(quads, {
+          factory: DataFactory
+        });
+        return;
+      });
+    }
+    else if (accept) {
+      return this.customFetch(
         resource.url,
         {
           method: "GET",
@@ -103,15 +122,21 @@ export class SolidClient {
             "Accept": accept,
           }
         }
-      );
+      ).then(async (response) => {
+        resource.data = await response.text();
+        return;
+      });
     }
     else {
-      return await this.customFetch(
+      return this.customFetch(
         resource.url,
         {
           method: "GET"
         }
-      );
+      ).then(async (response) => {
+        resource.data = await response.text();
+        return;
+      });
     }
     /*
     Retrieve a plain text file:
@@ -156,15 +181,21 @@ export class SolidClient {
       turtle = triples;
     }
 
+    /*
+    curl -X PATCH -H "Content-Type: application/sparql-update" \
+  -d "INSERT DATA { <ex:s2> <ex:p2> <ex:o2> }" \
+  http://localhost:3000/myfile.ttl
+     */
+
     await this.customFetch(
       resource.url,
       {
         method: "PATCH",
-        body: `@prefix solid: <http://www.w3.org/ns/solid/terms#>. _:rename a solid:InsertDeletePatch; solid:inserts { ${turtle} }.`,
+        body: `INSERT DATA { ${turtle} }`,
         headers: {
-          "Content-Type": "text/n3",
+          "Content-Type": "application/sparql-update",
         }
       }
-    );
+    )
   }
 }

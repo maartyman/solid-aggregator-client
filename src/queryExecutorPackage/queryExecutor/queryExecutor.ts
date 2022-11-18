@@ -129,7 +129,20 @@ export class QueryExecutor extends Actor<string> {
         case "error":
           //TODO solve error
           this.logger.error(value.message);
-          this.emit("queryEvent", "error");
+          LocalQueryEngineFactory.deleteWorker(
+            this.queryExplanation.comunicaVersion.toString(),
+            this.queryExplanation.comunicaContext.toString()
+          );
+          LocalQueryEngineFactory.getOrCreate(
+            this.queryExplanation.comunicaVersion.toString(),
+            this.queryExplanation.comunicaContext.toString()
+          ).then((queryEngine: Worker) => {
+            this.queryEngine = queryEngine;
+            this.logger.debug(`Comunica engine build`);
+            this.queryEngineBuild = true;
+            this.emit("queryEngineEvent", "build");
+            this.executeQuery();
+          });
           break;
         case "fetch":
           this.customFetch(value.message);
@@ -230,7 +243,7 @@ export class QueryExecutor extends Actor<string> {
     });
     this.results.forEach((value, key) => {
       if (!value.used){
-        this.emit("binding", [value.bindings], false);
+        this.emit("binding", value.bindings, false);
         this.results.delete(key);
       }
     });

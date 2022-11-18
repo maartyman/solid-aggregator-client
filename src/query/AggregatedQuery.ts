@@ -29,7 +29,7 @@ export class AggregatedQuery extends Query {
       queryString: queryContext.query,
       sources: queryContext.sources,
       reasoningRules: queryContext.reasoningRules,
-      lenient: false,
+      lenient: true,
       comunicaVersion: queryContext.comunicaVersion,
       comunicaContext: queryContext.comunicaContext
     }
