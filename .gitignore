@@ -1,6 +1,6 @@
 *.js
 package-lock.json
-SolidBench
+#SolidBench
 
 # -- custom: --
 bin/
