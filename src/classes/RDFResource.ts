@@ -3,7 +3,7 @@ import N3 from "n3";
 
 export class RDFResource implements IResource {
   public url: string;
-  public contentType = "text/turtle";
+  public contentType = "application/n-quads";
   public data?: string | N3.Store;
 
   constructor(url: string, data?: N3.Store | string) {
