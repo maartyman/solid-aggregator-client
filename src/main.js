@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LocalQuery = exports.AggregatedQuery = exports.RDFResource = exports.SolidClient = void 0;
+var SolidClient_1 = require("./classes/SolidClient");
+Object.defineProperty(exports, "SolidClient", { enumerable: true, get: function () { return SolidClient_1.SolidClient; } });
+var RDFResource_1 = require("./classes/RDFResource");
+Object.defineProperty(exports, "RDFResource", { enumerable: true, get: function () { return RDFResource_1.RDFResource; } });
+var AggregatedQuery_1 = require("./query/AggregatedQuery");
+Object.defineProperty(exports, "AggregatedQuery", { enumerable: true, get: function () { return AggregatedQuery_1.AggregatedQuery; } });
+var LocalQuery_1 = require("./query/LocalQuery");
+Object.defineProperty(exports, "LocalQuery", { enumerable: true, get: function () { return LocalQuery_1.LocalQuery; } });
