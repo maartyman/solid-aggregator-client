@@ -58,6 +58,7 @@ export class SolidClient {
   public switchQueryType(query: AggregatedQuery | LocalQuery): boolean {
     //query = query.switchQueryType();
     //TODO implement
+    throw new Error("Function switchQueryType() is not yet implemented");
     return true;
   }
 

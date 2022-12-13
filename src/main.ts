@@ -1,5 +1,11 @@
 export {SolidClient} from "./classes/SolidClient";
 export {QueryContext} from "./utils/queryContext";
+export {TComunicaContext, TComunicaVersion} from "./queryExecutorPackage/queryExecutor/queryExplanation";
+export {IResource} from "./classes/interfaces/IResource";
+export {RDFResource} from "./classes/RDFResource";
+export {AggregatedQuery} from "./query/AggregatedQuery";
+export {LocalQuery} from "./query/LocalQuery";
+export {TLogLevelName} from "tslog";
 
 /*
 //TODO changeable queries? => 100% clientside (maybe a schema of what the query will look like)
