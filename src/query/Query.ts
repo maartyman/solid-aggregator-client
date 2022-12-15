@@ -22,7 +22,7 @@ export abstract class Query {
     return this.queryBindings;
   }
 
-  protected async queryReadyPromise(): Promise<void> {
+  public async queryReadyPromise(): Promise<void> {
     if (!this.queryReady) {
       await new Promise<void>((resolve, reject) => {
         this.subscribeOnReady(() => {

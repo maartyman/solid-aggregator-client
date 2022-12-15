@@ -31,6 +31,7 @@ export class WebSocketClient {
 
   public connect(host: string, connectCB: (conn: connection) => void, protocol?: string) {
     const wsClient = new client();
+    wsClient.setMaxListeners(Infinity);
 
     this.websockets.push(wsClient);
 

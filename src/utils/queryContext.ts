@@ -1,4 +1,4 @@
-import {TComunicaContext, TComunicaVersion} from "../queryExecutorPackage/queryExecutor/queryExplanation";
+import {TComunicaContext, TComunicaVersion} from "incremunica";
 
 export type QueryContext = {
   query: string;

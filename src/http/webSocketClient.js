@@ -27,6 +27,7 @@ class WebSocketClient {
     }
     connect(host, connectCB, protocol) {
         const wsClient = new websocket_1.client();
+        wsClient.setMaxListeners(Infinity);
         this.websockets.push(wsClient);
         wsClient.on('connectFailed', (error) => {
             this.logger.debug('Connect Error: ' + error.toString());

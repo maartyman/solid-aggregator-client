@@ -14,8 +14,8 @@ const tslog_1 = require("tslog");
 const loggerSettings_1 = require("../utils/loggerSettings");
 const Query_1 = require("./Query");
 const AggregatedQuery_1 = require("./AggregatedQuery");
-const queryExecutor_1 = require("../queryExecutorPackage/queryExecutor/queryExecutor");
-const queryExplanation_1 = require("../queryExecutorPackage/queryExecutor/queryExplanation");
+const incremunica_1 = require("incremunica");
+const incremunica_2 = require("incremunica");
 class LocalQuery extends Query_1.Query {
     constructor(solidClient, queryContext, queryBindings) {
         super(queryContext, queryBindings);
@@ -26,8 +26,8 @@ class LocalQuery extends Query_1.Query {
         this.logger.info("LocalQuery");
         this.solidClient = solidClient;
         this.guardingEnabled = (queryContext.local == undefined) ? false : queryContext.local.guarded;
-        this.queryExplanation = new queryExplanation_1.QueryExplanation(queryContext.query, queryContext.sources, queryContext.comunicaVersion, queryContext.comunicaContext, queryContext.reasoningRules, true);
-        this.queryExecutor = new queryExecutor_1.QueryExecutor("", this.queryExplanation, this.guardingEnabled);
+        this.queryExplanation = new incremunica_2.QueryExplanation(queryContext.query, queryContext.sources, queryContext.comunicaVersion, queryContext.comunicaContext, queryContext.reasoningRules, true);
+        this.queryExecutor = new incremunica_1.QueryExecutor("", this.queryExplanation, this.guardingEnabled);
         this.queryExecutor.on("queryEvent", (value) => {
             if (value === "initialized") {
                 this.afterQueryReady();
@@ -36,7 +36,7 @@ class LocalQuery extends Query_1.Query {
     }
     checkQueryExecutor() {
         if (this.queryExecutor == null) {
-            this.queryExecutor = new queryExecutor_1.QueryExecutor("", this.queryExplanation, this.guardingEnabled);
+            this.queryExecutor = new incremunica_1.QueryExecutor("", this.queryExplanation, this.guardingEnabled);
             this.queryExecutor.on("queryEvent", (value) => {
                 if (value === "initialized") {
                     this.afterQueryReady();

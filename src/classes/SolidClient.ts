@@ -11,6 +11,7 @@ import {WebSocketClient} from "../http/webSocketClient";
 import fetch from "cross-fetch";
 import {loggerSettings} from "../utils/loggerSettings";
 import {Logger, TLogLevelName} from "tslog";
+import {loggerSettings as incremunicaLoggerSettings} from "incremunica";
 
 /*
 SolidClient:
@@ -38,6 +39,8 @@ export class SolidClient {
     //TODO make sure the URL's are normalized (no trailing backslash)
 
     loggerSettings.minLevel = debug;
+    incremunicaLoggerSettings.minLevel = debug;
+
     this.podUrl = podUrl;
     this.customFetch = customFetch? customFetch : fetch;
     this.aggregationServerUrl = aggregationServerUrl;

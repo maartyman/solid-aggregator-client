@@ -1,6 +1,6 @@
 export {SolidClient} from "./classes/SolidClient";
 export {QueryContext} from "./utils/queryContext";
-export {TComunicaContext, TComunicaVersion} from "./queryExecutorPackage/queryExecutor/queryExplanation";
+export {TComunicaContext, TComunicaVersion} from "incremunica";
 export {IResource} from "./classes/interfaces/IResource";
 export {RDFResource} from "./classes/RDFResource";
 export {AggregatedQuery} from "./query/AggregatedQuery";

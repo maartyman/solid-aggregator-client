@@ -145,7 +145,7 @@ class AggregatedQuery extends Query_1.Query {
     getBindings() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.solidClient.aggregationServerUrl) {
-                throw new Error("aggregationServerUrl not defined (this shouldn't happen, something is wrong in the package)");
+                throw new Error("AggregationServerUrl not defined (this shouldn't happen, something is wrong in the package)");
             }
             yield this.queryReadyPromise();
             const response = yield (0, cross_fetch_1.default)(this.solidClient.aggregationServerUrl + `/` + this.UUID, {

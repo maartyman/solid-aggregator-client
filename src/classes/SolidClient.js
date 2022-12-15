@@ -44,6 +44,7 @@ const webSocketClient_1 = require("../http/webSocketClient");
 const cross_fetch_1 = __importDefault(require("cross-fetch"));
 const loggerSettings_1 = require("../utils/loggerSettings");
 const tslog_1 = require("tslog");
+const incremunica_1 = require("incremunica");
 /*
 SolidClient:
   init:
@@ -62,6 +63,7 @@ class SolidClient {
     constructor(podUrl, customFetch, aggregationServerUrl, debug) {
         //TODO make sure the URL's are normalized (no trailing backslash)
         loggerSettings_1.loggerSettings.minLevel = debug;
+        incremunica_1.loggerSettings.minLevel = debug;
         this.podUrl = podUrl;
         this.customFetch = customFetch ? customFetch : cross_fetch_1.default;
         this.aggregationServerUrl = aggregationServerUrl;

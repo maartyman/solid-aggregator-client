@@ -155,7 +155,7 @@ export class AggregatedQuery extends Query {
 
   async getBindings(): Promise<Bindings[]> {
     if (!this.solidClient.aggregationServerUrl) {
-      throw new Error("aggregationServerUrl not defined (this shouldn't happen, something is wrong in the package)")
+      throw new Error("AggregationServerUrl not defined (this shouldn't happen, something is wrong in the package)")
     }
 
     await this.queryReadyPromise();

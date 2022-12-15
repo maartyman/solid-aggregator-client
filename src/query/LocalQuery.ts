@@ -5,8 +5,8 @@ import {QueryContext} from "../utils/queryContext";
 import {AggregatedQuery} from "./AggregatedQuery";
 import {Bindings} from "@comunica/bindings-factory";
 import {SolidClient} from "../classes/SolidClient";
-import {QueryExecutor} from "../queryExecutorPackage/queryExecutor/queryExecutor";
-import {QueryExplanation} from "../queryExecutorPackage/queryExecutor/queryExplanation";
+import {QueryExecutor} from "incremunica";
+import {QueryExplanation} from "incremunica";
 
 export class LocalQuery extends Query {
   private logger = new Logger(loggerSettings);
