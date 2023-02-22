@@ -26,7 +26,7 @@ class LocalQuery extends Query_1.Query {
         this.logger.info("LocalQuery");
         this.solidClient = solidClient;
         this.guardingEnabled = (queryContext.local == undefined) ? false : queryContext.local.guarded;
-        this.queryExplanation = new incremunica_2.QueryExplanation(queryContext.query, queryContext.sources, queryContext.comunicaVersion, queryContext.comunicaContext, queryContext.reasoningRules, true);
+        this.queryExplanation = new incremunica_2.QueryExplanation(queryContext.query, queryContext.sources, queryContext.comunicaVersion, queryContext.comunicaContext, queryContext.reasoningRules, queryContext.lenient);
         this.queryExecutor = new incremunica_1.QueryExecutor("", this.queryExplanation, this.guardingEnabled);
         this.queryExecutor.on("queryEvent", (value) => {
             if (value === "initialized") {

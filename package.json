@@ -1,6 +1,6 @@
 {
   "name": "solid-aggregator-client",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A client package to simplify the use of the solid-aggregator-server.",
   "type": "commonjs",
   "main": "./src/main.js",
@@ -31,10 +31,10 @@
   "dependencies": {
     "@comunica/bindings-factory": "^2.2.0",
     "@comunica/bus-normalize-rule": "^0.2.0",
-    "@comunica/config-query-sparql-link-traversal": "^0.0.2-alpha.5.0",
+    "@comunica/config-query-sparql-link-traversal": "0.0.2-alpha.5.0",
     "@comunica/config-reasoning": "^0.2.0",
-    "@comunica/query-sparql-link-traversal": "^0.0.2-alpha.5.0",
-    "@comunica/query-sparql-link-traversal-solid": "^0.0.2-alpha.6.0",
+    "@comunica/query-sparql-link-traversal": "0.0.2-alpha.5.0",
+    "@comunica/query-sparql-link-traversal-solid": "0.0.2-alpha.6.0",
     "@comunica/query-sparql-reasoning": "^0.2.0",
     "@comunica/query-sparql-solid": "^2.2.0",
     "@comunica/reasoning-context-entries": "^0.2.0",

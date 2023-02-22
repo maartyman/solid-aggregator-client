@@ -29,7 +29,7 @@ export class LocalQuery extends Query {
       queryContext.comunicaVersion,
       queryContext.comunicaContext,
       queryContext.reasoningRules,
-      true
+      queryContext.lenient
     );
 
     this.queryExecutor = new QueryExecutor(

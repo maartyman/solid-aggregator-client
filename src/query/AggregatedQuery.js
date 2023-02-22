@@ -33,7 +33,7 @@ class AggregatedQuery extends Query_1.Query {
             queryString: queryContext.query,
             sources: queryContext.sources,
             reasoningRules: queryContext.reasoningRules,
-            lenient: true,
+            lenient: queryContext.lenient,
             comunicaVersion: queryContext.comunicaVersion,
             comunicaContext: queryContext.comunicaContext
         };
